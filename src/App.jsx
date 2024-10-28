@@ -2,6 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { FaDeleteLeft } from "react-icons/fa6";
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { BsExclamationDiamondFill } from "react-icons/bs";
+
+const Tooltip = ({ text }) => {
+  return (
+    <div className=" ml-15 absolute left-1/2 transform -translate-x-10 -translate-y-12 mb-2 w-max p-2 bg-purple-600 text-white text-sm rounded-lg opacity-80">
+      {text}
+    </div>
+  );
+};
 
 const DraggableInput = ({ index, label, inputValue, onLabelChange, onInputChange, onDeleteInput, moveInput }) => {
   const [, ref] = useDrag({
@@ -14,7 +23,7 @@ const DraggableInput = ({ index, label, inputValue, onLabelChange, onInputChange
     hover(item) {
       if (item.index !== index) {
         moveInput(item.index, index);
-        item.index = index; // Update the item's index
+        item.index = index;
       }
     },
   });
@@ -27,7 +36,7 @@ const DraggableInput = ({ index, label, inputValue, onLabelChange, onInputChange
         onChange={(e) => onLabelChange(index, e.target.value)}
         placeholder='Tagging'
         maxLength={10}
-        className="flex-grow text-sm p-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-purple-500" 
+        className="flex-grow text-sm p-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
         style={{ width: '60%' }}
       />
       <input
@@ -40,22 +49,23 @@ const DraggableInput = ({ index, label, inputValue, onLabelChange, onInputChange
         style={{ width: '20%' }}
       />
       <button
-        onClick={() => onDeleteInput(index)} 
+        onClick={() => onDeleteInput(index)}
         className="text-purple-500 rounded-lg hover:text-red-700 transition border-b-purple-900 ml-1"
       >
-        <FaDeleteLeft className='text-3xl'/>
+        <FaDeleteLeft className='text-3xl' />
       </button>
     </div>
   );
 };
 
 const App = () => {
-  const [inputs, setInputs] = useState(['']);
-  const [labels, setLabels] = useState(['']);
+  const [inputs, setInputs] = useState([60, 30]);
+  const [labels, setLabels] = useState(['Lunch', 'Break']);
   const [currentTime, setCurrentTime] = useState('');
   const [totalTime, setTotalTime] = useState('22:00');
   const [remainingMinutes, setRemainingMinutes] = useState(0);
-  const [eod, setEod] = useState(false);
+  const [eod, setEod] = useState(true);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const handleToggle = () => {
     setEod(!eod);
@@ -88,7 +98,9 @@ const App = () => {
     const newInputs = [...inputs];
     newInputs[index] = value;
     setInputs(newInputs);
+    console.log(newInputs)
   };
+
 
   const handleLabelChange = (index, value) => {
     const capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1);
@@ -168,11 +180,15 @@ const App = () => {
     return `${hours > 0 ? `${hours} hour${hours > 1 ? 's' : ''} ` : ''}${minutes} minute${minutes > 1 ? 's' : ''}`;
   };
 
+
   const formatTotalTime = (total) => {
     const hours = Math.floor(total / 60);
     const minutes = total % 60;
     return `${hours > 0 ? `${hours} hour${hours > 1 ? 's' : ''} ` : ''}${minutes} minute${minutes > 1 ? 's' : ''}`;
   };
+
+  const addTotal = (e) => {
+    setTotalTime(e.target.value)}
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -185,7 +201,7 @@ const App = () => {
               <input
                 type="time"
                 value={totalTime}
-                onChange={(e) => setTotalTime(e.target.value) }
+                onChange={addTotal}
                 className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 w-full"
               />
             </div>
@@ -204,59 +220,65 @@ const App = () => {
               />
             ))}
             <div className="flex justify-center mb-5">
-              <button 
-                onClick={handleAddInput} 
+              <button
+                onClick={handleAddInput}
                 className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded"
               >
                 Add Indirect
               </button>
             </div>
-           
-            
-            
-            <div className="mb-4 text-xl text-gray-800 font-bold">Total Indirect: <span className="text-violet-600">{formatTotalTime(total)}</span></div>
-            <section className='bg-violet-100 rounded-lg p-4 shadow-md'>
-            <div className="flex justify-between items-center mb-2">
-    <div className="text-lg font-bold">{eod?'Schedule' : 'EOD'}</div>
-    <div className="flex items-center">
-      <input
-        type="checkbox"
-        checked={eod}
-        onChange={handleToggle}
-        id="switch"
-        className="hidden"
-      />
-      <label
-        htmlFor="switch"
-        className={`relative inline-flex items-center cursor-pointer w-12 h-6 rounded-full transition duration-200 ease-in-out ${eod ? 'bg-yellow-500' : 'bg-green-500'}`}
-      >
-        <span
-          className={`transform transition duration-200 ease-in-out inline-block w-6 h-6 bg-white rounded-full shadow ${eod ? 'translate-x-6' : 'translate-x-0'}`}
-        />
-      </label>
-    </div>
-  </div>
-  <section className= 'bg-violet-200 rounded-lg p-4 shadow-md'>
-            {schedules.map((schedule, index) => (
-                <div key={index} className="text-lg mb-1">                 
-                  <span className="font-semibold">{schedule.label}</span>: {eod? `${schedule.start} - ${schedule.time} (${schedule.input > 1 ? schedule.input + ' mins' : schedule.input + ' min'})` : schedule.input/60  }    
-                </div>
-              ))}
-              <div className='text-lg mb-1'>
-              <span className=' font-semibold'>{eod?'':'Prod: '}</span><span >{eod? '' :  `${(540-total)/60}`}</span>
+
+            <div className='flex center-item mb-2 '>
+              <div className="text-xl text-gray-800 font-bold">Total Indirect: <span className="text-violet-600">{formatTotalTime(total)}  </span> </div>
+              <div
+                onMouseEnter={() => setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+                className="relative mt-2"
+              >
+                <BsExclamationDiamondFill className="text-purple-500 hover:text-purple-600 ml-2 text-base" />
+                {showTooltip && <Tooltip text="Tip: You can drag and drop the inputs " />}
               </div>
+            </div>
+
+            <section className='bg-violet-100 rounded-lg p-4 shadow-md'>
+              <div className="flex justify-between items-center mb-2">
+                <div className="text-lg font-bold">{eod ? 'Schedule' : 'EOD'}</div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={eod}
+                    onChange={handleToggle}
+                    id="switch"
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="switch"
+                    className={`relative inline-flex items-center cursor-pointer w-12 h-6 rounded-full transition duration-200 ease-in-out ${eod ? 'bg-yellow-500' : 'bg-green-500'}`}
+                  >
+                    <span
+                      className={`transform transition duration-200 ease-in-out inline-block w-6 h-6 bg-white rounded-full shadow ${eod ? 'translate-x-6' : 'translate-x-0'}`}
+                    />
+                  </label>
+                </div>
+              </div>
+              <section className='bg-violet-200 rounded-lg p-4 shadow-md'>
+                {schedules.map((schedule, index) => (
+                  <div key={index} className="text-lg mb-1">
+                    <span className="font-semibold">{schedule.label}</span>: {eod ? `${schedule.start} - ${schedule.time} (${schedule.input > 1 ? schedule.input + ' mins' : schedule.input + ' min'})` : (schedule.input / 60).toFixed(2)}
+                  </div>
+                ))}
+                <div className='text-lg mb-1'>
+                  <span className='font-semibold'>{eod ? '' : 'Prod: '}</span><span>{eod ? '' : `${((540 - total) / 60).toFixed(2)}`}</span>
+                </div>
               </section>
             </section>
           </section>
         </div>
-        
+
         <footer className='bg-purple-800 text-white text-center py-2 mt-3'>
           <p>Created by: Truda 🤪</p>
           <p>Copyright © 2024. All rights reserved.</p>
-         
         </footer>
-        <div classname ="text-8xl">Note: You can move the tagging to change its position</div>
-        
       </div>
     </DndProvider>
   );
