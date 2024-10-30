@@ -98,7 +98,6 @@ const App = () => {
     const newInputs = [...inputs];
     newInputs[index] = value;
     setInputs(newInputs);
-    console.log(newInputs)
   };
 
 
@@ -140,8 +139,15 @@ const App = () => {
     let scheduleTime = adjustedTimeInMinutes;
 
     let schedules = totalInputs.map((input, index) => {
-      const startHours = Math.floor(scheduleTime / 60);
-      const startMinutes = scheduleTime % 60;
+      let startHours = Math.floor(scheduleTime / 60);
+      if (startHours <= 0) {
+        startHours += 24;
+      }
+      let startMinutes = scheduleTime % 60;
+      if(startMinutes <= 0) {
+        startMinutes += 60;
+      }
+      
       const startFormat = `${startHours > 12 ? startHours - 12 : startHours || 12}:${startMinutes < 10 ? '0' + startMinutes : startMinutes} ${startHours >= 12 ? 'PM' : 'AM'}`;
 
       scheduleTime += input;
@@ -173,7 +179,7 @@ const App = () => {
   };
 
   const { total, schedules } = calculateSchedules();
-
+  
   const formatRemainingTime = (remaining) => {
     const hours = Math.floor(remaining / 60);
     const minutes = remaining % 60;
